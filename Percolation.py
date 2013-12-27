@@ -8,13 +8,12 @@ from Stats import Stats
 
 class Percolation(object):
 
-    IMAGE_SIZE = (1000, 1000)
-    OUTPUT = "out.png"
-
-    def __init__(self, L, R, N):
+    def __init__(self, L, R, N, OUTPUT, IMAGE_SIZE):
         self.L = L
         self.R = R
         self.N = N
+        self.OUTPUT = OUTPUT
+        self.IMAGE_SIZE = IMAGE_SIZE
         self._graph_init()
         self.tests = []
 
@@ -93,53 +92,57 @@ class Percolation(object):
         return percolates
 
     def draw(self):
-        graph_draw(self.g, pos = self.pos, edge_color = self.edge_color, edge_pen_width = self.pen, vertex_fill_color = self.vertices_color, output = Percolation.OUTPUT, output_size = Percolation.IMAGE_SIZE)
+        graph_draw(self.g, pos = self.pos, edge_color = self.edge_color, edge_pen_width = self.pen, vertex_fill_color = self.vertices_color, output = self.OUTPUT, output_size = self.IMAGE_SIZE)
 
 
-from sys import argv
+from optparse import OptionParser
 
 if __name__=="__main__":
-    try:
-        arguments = list(map(int, argv[1:]))
-        L = arguments[0]
-        assert(L > 1)
-        R = arguments[1]
-        assert(R > 0)
-        N = arguments[2]
-        assert(N > 0)
-        NUM_TESTS = None
-        if len(arguments) == 4:
-            NUM_TESTS = arguments[3]
-        OK = True
-    except:
-        print("""Usage: ./Percolation.py L R N
-        Output: {0.OUTPUT}
-        Image size: {0.IMAGE_SIZE[0]:d} X {0.IMAGE_SIZE[1]:d}""".format(Percolation))
-        OK = None
-    if OK:
-        p = Percolation(L, R, N)
-        print(p.run())
-        p.draw()
+    parser = OptionParser()
+    usage = "Usage: ./Percolation.py -L 100 -R 2 -N 500 -I 1000 -O out.png -T 100"
+    parser.add_option("-L", "--Length", type="int",
+              help="Grid side",
+              dest="L", default=20)
+    parser.add_option("-R", "--Limit", type="int",
+              help="Limit distance", 
+              dest="R", default=2)
+    parser.add_option("-N", "--Number", type="int",
+              help="Number of particles", 
+              dest="N", default=500)
+    parser.add_option("-I", "--Image", type="int",
+              help="Image size", 
+              dest="I", default=1000)
+    parser.add_option("-O", "--Output", type="string",
+              help="Output filename", 
+              dest="O", default="out.png")
+    parser.add_option("-T", "--Tests", type="int",
+              help="Number of tests", 
+              dest="T", default=50)
+    (options, args) = parser.parse_args()
+    
+    p = Percolation(options.L, options.R, options.N, options.O, (options.I, options.I))
+    print(p.run())
+    p.draw()
 
-        if NUM_TESTS:
-            p.N = L * L
-            for _ in range(NUM_TESTS):
-                p.run()
+    if options.T:
+        p.N = options.L * options.L
+        for _ in range(options.T):
+            p.run()
 
-            tests = sorted(p.tests)
+        tests = sorted(p.tests)
 
-            pace = max(NUM_TESTS // 100, 1)
-            stats = {}
-            for i in range(0, NUM_TESTS, pace):
-                stats[tests[i]] = float(i) / NUM_TESTS
+        pace = max(options.T // 100, 1)
+        stats = {}
+        for i in range(0, options.T, pace):
+            stats[tests[i]] = float(i) / options.T
 
-            l = list(zip(*list(stats.items())))
+        l = list(zip(*list(stats.items())))
 
-            import matplotlib.pyplot as plt
+        import matplotlib.pyplot as plt
 
-            plt.plot(l[0], l[1], 'ro')
-            plt.axis([0, L * L, 0, 1])
-            plt.show()
-            print("Mean: ", Stats.mean(l[0]))
-            print("Deviation: ", Stats.stddev(l[0]))
-            print("95 percent confidence interval: ", Stats.confidence(l[0]))
+        plt.plot(l[0], l[1], 'ro')
+        plt.axis([0, options.L * options.L, 0, 1])
+        plt.show()
+        print("Mean: ", Stats.mean(l[0]))
+        print("Deviation: ", Stats.stddev(l[0]))
+        print("95 percent confidence interval: ", Stats.confidence(l[0]))
