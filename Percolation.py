@@ -60,7 +60,7 @@ class Percolation(object):
             p = random.randrange(L, L * L - L)
             particles.add(p)
             current_vertice = self.g.vertex(p)
-            self.vertices_color[current_vertice] = [1, 0, 0, 1]
+            self.vertices_color[current_vertice] = [0, 1, 0, 1]
             x, y = self._get_pos(p)
             for i in range(max(0, x - R), min(L, x + R + 1)):
                 if percolates: break
@@ -82,7 +82,10 @@ class Percolation(object):
             if union.connected(0, edge[0] + 1):
                 current_edge = self.g.add_edge(self.vertices[edge[0]], self.vertices[edge[1]])
                 self.pen[current_edge] = 3
-                self.edge_color[current_edge] = [0, 0, 1, 1]
+                if percolates:
+                    self.edge_color[current_edge] = [0, 0, 1, 1]
+                else:
+                    self.edge_color[current_edge] = [1, 0, 0, 1]
 
         if percolates:
             self.tests.append(len(particles))
