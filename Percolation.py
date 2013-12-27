@@ -43,7 +43,6 @@ class Percolation(object):
         L = self.L
         R = self.R
         percolates = False
-        probability = 0
 
         union = UF(L * L + 2)
         # bottom
@@ -56,7 +55,7 @@ class Percolation(object):
         particles = set()
         edges     = set()
 
-        while len(particles) != N:
+        while len(particles) != self.N:
             if percolates: break
             p = random.randrange(L, L * L - L)
             particles.add(p)
@@ -64,6 +63,7 @@ class Percolation(object):
             self.vertices_color[current_vertice] = [1, 0, 0, 1]
             x, y = self._get_pos(p)
             for i in range(max(0, x - R), min(L, x + R + 1)):
+                if percolates: break
                 for j in range(max(0, y - R), min(L, y + R + 1)):
                     if (i, j) == (x, y): continue
                     if self._sqrdist((i, j), (x, y)) > R * R: continue
@@ -77,13 +77,15 @@ class Percolation(object):
                     if union.connected(L * L + 1, 0): 
                         percolates = True
 
+
         for edge in edges:
             if union.connected(0, edge[0] + 1):
                 current_edge = self.g.add_edge(self.vertices[edge[0]], self.vertices[edge[1]])
                 self.pen[current_edge] = 3
                 self.edge_color[current_edge] = [0, 0, 1, 1]
 
-        self.tests.append(len(particles))
+        if percolates:
+            self.tests.append(len(particles))
 
         return percolates
 
@@ -105,34 +107,36 @@ if __name__=="__main__":
         NUM_TESTS = None
         if len(arguments) == 4:
             NUM_TESTS = arguments[3]
+        OK = True
     except:
         print("""Usage: ./Percolation.py L R N
         Output: {0.OUTPUT}
         Image size: {0.IMAGE_SIZE[0]:d} X {0.IMAGE_SIZE[1]:d}""".format(Percolation))
+        OK = None
+    if OK:
+        p = Percolation(L, R, N)
+        print(p.run())
+        p.draw()
 
-    p = Percolation(L, R, N)
-    print(p.run())
-    p.draw()
+        if NUM_TESTS:
+            p.N = L * L
+            for _ in range(NUM_TESTS):
+                p.run()
 
-    if NUM_TESTS:
-        p.N = L * L
-        for _ in range(NUM_TESTS):
-            p.run()
+            tests = sorted(p.tests)
 
-        tests = sorted(p.tests)
+            pace = max(NUM_TESTS // 100, 1)
+            stats = {}
+            for i in range(0, NUM_TESTS, pace):
+                stats[tests[i]] = float(i) / NUM_TESTS
 
-        pace = max(NUM_TESTS // 100, 1)
-        stats = {}
-        for i in range(0, NUM_TESTS, pace):
-            stats[tests[i]] = float(i) / NUM_TESTS
+            l = list(zip(*list(stats.items())))
 
-        l = list(zip(*list(stats.items())))
+            import matplotlib.pyplot as plt
 
-        import matplotlib.pyplot as plt
-
-        plt.plot(l[0], l[1], 'ro')
-        plt.axis([0, L * L, 0, 1])
-        plt.show()
-        print("Mean: ", Stats.mean(l[0]))
-        print("Deviation: ", Stats.stddev(l[0]))
-        print("95 percent confidence interval: ", Stats.confidence(l[0]))
+            plt.plot(l[0], l[1], 'ro')
+            plt.axis([0, L * L, 0, 1])
+            plt.show()
+            print("Mean: ", Stats.mean(l[0]))
+            print("Deviation: ", Stats.stddev(l[0]))
+            print("95 percent confidence interval: ", Stats.confidence(l[0]))
