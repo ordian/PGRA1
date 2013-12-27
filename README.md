@@ -9,4 +9,5 @@ Requirements
 Run
 ============
 (*sudo chmod 777 Percolation.py*)
+
 ./Percolation.py
