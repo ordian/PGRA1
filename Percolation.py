@@ -4,7 +4,7 @@
 from graph_tool.all import *
 import random
 from UnionFind import UnionFind as UF
-
+from Stats import Stats
 
 class Percolation(object):
 
@@ -133,3 +133,6 @@ if __name__=="__main__":
         plt.plot(l[0], l[1], 'ro')
         plt.axis([0, L * L, 0, 1])
         plt.show()
+        print("Mean: ", Stats.mean(l[0]))
+        print("Deviation: ", Stats.stddev(l[0]))
+        print("95 percent confidence interval: ", Stats.confidence(l[0]))
